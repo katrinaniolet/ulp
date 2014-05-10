@@ -184,14 +184,26 @@ bool MainWindow::createDatabase()
             "STARTPOS       INT,"
             "ENDPOS         INT"
             ");");
+    db.exec("CREATE TABLE ORIGINAL_STATS ("
+            "COMBINATION    TEXT    NOT NULL,"
+            "LENGTH         INT     NOT NULL,"
+            "FREQUENCY      INT     NOT NULL"
+            ");");
     db.exec("CREATE TABLE COMBINATIONS ("
             "COMBINATION    TEXT    NOT NULL,"
             "LINENUMBER     INT     NOT NULL,"
             "STARTPOS       INT     NOT NULL,"
             "ENDPOS         INT     NOT NULL"
             ");");
+    db.exec("CREATE TABLE COMBINATIONS_STATS ("
+            "COMBINATION    TEXT    NOT NULL,"
+            "LENGTH         INT     NOT NULL,"
+            "FREQUENCY      INT     NOT NULL"
+            ");");
     db.exec("CREATE INDEX idx_ORIGINAL ON ORIGINAL (COMBINATION ASC);");
     db.exec("CREATE INDEX idx_COMBINATIONS ON COMBINATIONS (COMBINATION ASC);");
+    db.exec("CREATE INDEX idx_ORIGINAL_STATS ON ORIGINAL_STATS (COMBINATION ASC);");
+    db.exec("CREATE INDEX idx_COMBINATIONS_STATS ON ORIGINAL_STATS (COMBINATION ASC);");
     return true;
 }
 
