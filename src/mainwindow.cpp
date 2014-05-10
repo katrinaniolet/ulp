@@ -22,6 +22,7 @@ MainWindow::~MainWindow()
 
 bool MainWindow::loadText()
 {
+    setCursor(Qt::WaitCursor);
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select text"), QString(), tr("Text files (*.txt)"));
     QFile file(fileName);
     if(!file.open(QIODevice::ReadOnly)) {
@@ -65,6 +66,84 @@ bool MainWindow::loadText()
         return false;
     }
 
+    QFile outputFile(QFileInfo(m_textFilename).baseName()+"-simplified.txt");
+    if(!outputFile.open(QIODevice::WriteOnly)) {
+        statusBar()->showMessage(tr("Could not open simplified output text file"));
+        return false;
+    }
+    QFile idealFile(QFileInfo(m_textFilename).baseName()+"-idealoutput.txt");
+    if(!idealFile.open(QIODevice::WriteOnly)) {
+        statusBar()->showMessage(tr("Could not open ideal output text file"));
+        return false;
+    }
+    int lineNumber(1);
+    while(!file.atEnd()) {
+        QByteArray line = file.readLine();
+        if(line.startsWith("***END OF THE PROJECT GUTENBERG"))
+            break;
+
+        line.replace("."," ");
+        line.replace("?"," ");
+        line.replace("!"," ");
+        line.replace("'"," ");
+        line.replace("`"," ");
+        line.replace("\""," ");
+        line.replace(","," ");
+        line.replace("-"," ");
+        line.replace("+"," ");
+        line.replace(";"," ");
+        line.replace(":"," ");
+        line.replace("("," ");
+        line.replace(")"," ");
+        line.replace("["," ");
+        line.replace("]"," ");
+        line.replace("{"," ");
+        line.replace("}"," ");
+        line.replace("\t"," ");
+        line.replace("\n"," ");
+        line.replace("\r"," ");
+        line.replace("\v"," ");
+        line.replace("\f"," ");
+        //TODO replace non-visible characters
+
+        line = line.simplified();
+        if(line.isEmpty()) {
+            ++lineNumber;
+            continue;
+        }
+
+        QStringList words = QString::fromUtf8(line).split(" ");
+        foreach(QString word, words) {
+            word = word.simplified();
+
+            if(!word.isEmpty()) {
+                QSqlQuery infoQuery;
+                infoQuery.prepare("INSERT INTO ORIGINAL (COMBINATION, LINENUMBER, STARTPOS, ENDPOS) VALUES (:combo, :linenumber, NULL, NULL)");
+                infoQuery.bindValue(":combo",word.simplified());
+                infoQuery.bindValue(":linenumber",lineNumber);
+                if(!infoQuery.exec()) {
+                    statusBar()->showMessage(tr("Database error: %1").arg(infoQuery.lastError().databaseText()));
+                    return false;
+                }
+            }
+        }
+
+        if(!line.isEmpty()) {
+            idealFile.write(line);
+            idealFile.write("\n");
+        }
+
+        line.replace(" ","");
+
+        if(!line.isEmpty()) {
+            outputFile.write(line);
+            outputFile.write("\n");
+        }
+        ++lineNumber;
+    }
+    file.close();
+    outputFile.close();
+    setCursor(Qt::ArrowCursor);
     return true;
 }
 
@@ -102,8 +181,8 @@ bool MainWindow::createDatabase()
     db.exec("CREATE TABLE ORIGINAL ("
             "COMBINATION    TEXT    NOT NULL,"
             "LINENUMBER     INT     NOT NULL,"
-            "STARTPOS       INT     NOT NULL,"
-            "ENDPOS         INT     NOT NULL"
+            "STARTPOS       INT,"
+            "ENDPOS         INT"
             ");");
     db.exec("CREATE TABLE COMBINATIONS ("
             "COMBINATION    TEXT    NOT NULL,"
