@@ -86,6 +86,7 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad_Text"/>
+    <addaction name="actionLoad_Database"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -101,6 +102,11 @@
   <action name="actionLoad_Text">
    <property name="text">
     <string>Load Text...</string>
+   </property>
+  </action>
+  <action name="actionLoad_Database">
+   <property name="text">
+    <string>Load Database...</string>
    </property>
   </action>
  </widget>

@@ -18,6 +18,7 @@ public:
 public slots:
     bool loadText();
     bool createDatabase();
+    bool loadDatabase();
 
 private:
     Ui::MainWindow *ui;
