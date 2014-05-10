@@ -16,10 +16,13 @@ public:
     ~MainWindow();
 
 public slots:
-    void loadText();
+    bool loadText();
+    bool createDatabase();
 
 private:
     Ui::MainWindow *ui;
+    QString m_textFilename;
+    QString m_databaseFilename;
 };
 
 #endif // MAINWINDOW_H
